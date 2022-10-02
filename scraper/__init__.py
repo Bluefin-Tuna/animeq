@@ -36,25 +36,35 @@ def save_anime_names(filename: str = "./data/anime.csv", inp: list = None) -> No
                 f.write(f"{_[0]},{_[1]},{_[2]}\n")
     except Exception as e:
         print(e)
-            
-    # for i in _list:
-    #     print(i)
-    # soup = BeautifulSoup(page.content, parser)
-    # print(soup.prettify())
 
-def scrape_manga_names():
+def scrape_manga_names(driver: webdriver = driver) -> List[list]:
+    out = []
+    for _ in range(1379):
+        driver.get(f"https://manganato.com/genre-all/{_+1}?type=topview")
+        url = driver.find_elements(By.CSS_SELECTOR, ".panel-content-genres .content-genres-item .genres-item-name")
+        info = driver.find_elements(By.CSS_SELECTOR, ".panel-content-genres .content-genres-item .genres-item-view-time")
+        if(len(url) != len(info)):
+            print("Missalignment Found.")
+        for i in range(min(len(url), len(info))):
+            out.append([
+                url[i].text, 
+                info[i].find_element(By.CLASS_NAME, "genres-item-view").text,
+                info[i].find_element(By.CLASS_NAME, "genres-item-time").text,
+                info[i].find_element(By.CLASS_NAME, "genres-item-author").text,
+                url[i].get_attribute("href"),
+            ])
+        if(_%10 == 0):
+            save_manga_names(inp = out)
+    return out
+
+def save_manga_names(filename: str = "./data/manga.csv", inp: list = None) -> None:
     try:
-        pass
-    except:
-        pass
+        with open(filename, "w+") as f:
+            f.write("Name|View Count|Last Updated|Author|URL\n")
+            for _ in inp:
+                f.write(f"{_[0]}|{_[1]}|{_[2]}|{_[3]}|{_[4]}\n")
+    except Exception as e:
+        print(e)
 
-# def cross_reference():
-
-# def scrape_anime(name):
-
-
-
-# def scrape_manga(name):
-
-out = scrape_anime_names()
-save_anime_names(inp = out)
+out = scrape_manga_names()
+save_manga_names(inp = out)
