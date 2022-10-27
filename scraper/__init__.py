@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.options import Options
 import time
 
 options = Options()
-options.add_argument("--headless")
+# options.add_argument("--headless")
 
 driver = webdriver.Chrome("/home/tanush/Programming/Projects/animeq/scraper/chromedriver", options = options)
 
@@ -66,5 +66,49 @@ def save_manga_names(filename: str = "./data/manga.csv", inp: list = None) -> No
     except Exception as e:
         print(e)
 
-out = scrape_manga_names()
-save_manga_names(inp = out)
+def scraping_mal_url(ex, url, driver: webdriver = driver) -> List[list]:
+
+    NUM_MAL_ANIME = 22300
+    ANIME_PER_SITE = 50
+    SITE = "https://myanimelist.net/topanime.php"
+
+    for i in range(0, NUM_MAL_ANIME, ANIME_PER_SITE):
+        
+        p = []
+        
+        try:
+            time.sleep(0.1)
+            driver.get(f"{SITE}?limit={i}")
+            animes = driver.find_elements(By.CLASS_NAME, "ranking-list")
+            p = []
+            for j, a in enumerate(animes):
+                _ = a.find_element(By.XPATH, f'/html/body/div[1]/div[2]/div[3]/div[2]/div[3]/table/tbody/tr[{j+2}]/td[2]/div/div[2]/h3/a')
+                url.append(_.get_attribute("href"))
+                p.append(_.get_attribute("href"))
+
+        except KeyboardInterrupt as e:
+            return ex, url
+        
+        except Exception as err:
+            print(err)
+            if(len(p) < 45):
+                ex.append(i)
+            return ex, url
+  
+    return ex, url
+
+def scrape_mal_page(URL: str, driver: webdriver = driver) -> dict:
+    
+    URL = ""
+    page = driver.get(URL)
+    out = {}
+    score = page.find_element(By.XPATH, "/html/body/div[1]/div[2]/div[4]/div[2]/table/tbody/tr/td[1]/div/div[25]/span[2]")
+    rank = page.find_element(By.XPATH, "/html/body/div[1]/div[2]/div[4]/div[2]/table/tbody/tr/td[1]/div/div[26]/span").text
+    popu = page.find_element(By.XPATH)
+
+import pickle
+with open("tmp.pkl", "rb") as f:
+    ex, url = pickle.load(f)
+ex, url = scraping_mal_url(ex, url)
+with open("tmp.pkl", "wb") as f:
+    pickle.dump([ex, url], f, pickle.HIGHEST_PROTOCOL)
