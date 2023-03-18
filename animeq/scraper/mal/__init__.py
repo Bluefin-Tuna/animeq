@@ -10,6 +10,8 @@ from animeq.scraper import create_driver
 
 def scrape_url_mal(ex, url, driver: webdriver = None) -> List[list]:
     
+    # assert isinstance(driver, webdriver), "Driver should be defined as a webdriver."
+
     NUM_MAL_ANIME = 22300
     ANIME_PER_SITE = 50
     SITE = "https://myanimelist.net/topanime.php"
@@ -33,33 +35,35 @@ def scrape_url_mal(ex, url, driver: webdriver = None) -> List[list]:
   
     return ex, url
 
-def scrape_page_mal(URL: str, driver: webdriver = None):
+def scrape_page_mal(URL: str, driver: webdriver = None) -> dict:
+    
+    # assert isinstance(driver, webdriver), "Driver should be defined as a webdriver."
     
     driver.get(URL)
-    out = {}
-    
-    name = scrape_name(driver)
-    summary = scrape_summary(driver)
-    information = scrape_information(driver)
-    reviews = scrape_reviews(driver)
-    relations = scrape_relations(driver)
-    statistics = scrape_statistics(driver)
 
-    return statistics, information, summary, reviews, relations
+    return scrape_name(driver), scrape_summary(driver), scrape_information(driver), scrape_reviews(driver), scrape_relations(driver), scrape_statistics(driver)
 
-scrape_url = scrape_url_mal
-scrape_page = scrape_page_mal
+def scrape_pages_mal(driver: webdriver = None, file: str = "animeq/data/anime.csv"):
 
-statistics, information, summary, reviews, relations = scrape_page_mal(URL = "https://myanimelist.net/anime/5114/Fullmetal_Alchemist__Brotherhood", driver = create_driver())
-print(statistics)
-print("\n")
-print(information)
-print("\n")
-print(summary)
-print("\n")
-print(reviews)
-print("\n")
-print(relations)
+    # assert isinstance(driver, webdriver), "Driver should be defined as a webdriver."
 
-import re
-print(re.search(r"[\d]+[.,\d]+|[\d]*[.][\d]+|[\d]+", "9090 (scored by - users)"))
+    of = open("mal.tsv", "w")
+    f = open(file, 'r')
+    for l in f.readlines():
+        l = l.split(",")
+        NAME = ",".join(l[0: len(l) - 2])
+        URL = l[-1]
+        try:
+            name, summary, info, rev, rel, stat = scrape_page_mal(URL, driver)
+            of.write(f"{NAME}\t{URL}\t{name}\t{summary}\t{info}\t{rev}\t{rel}\t{stat}\n")
+        except Exception as e:
+            print(e)
+
+# scrape_url = scrape_url_mal
+# scrape_page = scrape_page_mal
+
+# scrape_pages_mal(driver= create_driver())
+
+scraper = create_driver()
+e = scraper.find_element(By.XPATH, "/html/body/div/div/main/div/div/div[4]/div[2]/div[2]/div/div/div/div/div[1]/div/div/div[1]/div[2]/div/div/div/div/div/div/div/article").text
+print(e)

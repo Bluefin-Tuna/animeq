@@ -1,6 +1,5 @@
 from typing import List
 from collections import defaultdict
-from const import STATUSES
 import re
 
 def process_name(name: str) -> str:
@@ -9,11 +8,7 @@ def process_name(name: str) -> str:
 def process_summary(sum: str) -> str:
     return str(sum)
 
-def process_information(info: List[tuple]): # -> dict:
-    o = {}
-    o[info[0][0].strip()] = info[0][1].strip()
-    o[info[1][0].strip()] = STATUSES[info[1][1].strip()]
-    o[]
+def process_information(info: List[tuple]) -> dict:
     return info
 
 def process_statistics(stat: List[tuple]):
